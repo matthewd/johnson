@@ -256,16 +256,6 @@ set_debugger(VALUE self, VALUE debugger)
   return debugger;
 }
 
-JSBool gc_callback(JSContext *context, JSGCStatus status)
-{
-  if(status == JSGC_BEGIN) {
-    VALUE ruby_runtime = (VALUE)JS_GetRuntimePrivate(JS_GetRuntime(context));
-    if(rb_funcall(ruby_runtime, rb_intern("should_sm_gc?"), 0) == Qtrue)
-      return JS_TRUE;
-  }
-  return JS_FALSE;
-}
-
 static VALUE
 initialize_native(VALUE self, VALUE UNUSED(options))
 {
@@ -279,7 +269,6 @@ initialize_native(VALUE self, VALUE UNUSED(options))
     && (runtime->rbids = create_id_hash()))
   {
     JS_SetRuntimePrivate(runtime->js, (void *)self);
-    JS_SetGCCallbackRT(runtime->js, gc_callback);
 
     JSContext* context = johnson_get_current_context(runtime);
 
@@ -332,9 +321,6 @@ void johnson_runtime_unref(JohnsonRuntime* runtime)
 
 static void deallocate(JohnsonRuntime* runtime)
 {
-  // our gc callback can create ruby objects, so disable it
-  JS_SetGCCallbackRT(runtime->js, NULL);
-
   JSContext *context  = NULL;
   JSContext *iterator = NULL;
 

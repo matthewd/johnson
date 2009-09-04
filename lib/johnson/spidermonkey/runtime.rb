@@ -1,8 +1,6 @@
 module Johnson #:nodoc:
   module SpiderMonkey #:nodoc:
     class Runtime # native
-      CONTEXT_MAP_KEY = :johnson_context_map
-
       attr_reader :traps
       def initialize(options={})
         @debugger = nil
@@ -76,16 +74,6 @@ module Johnson #:nodoc:
 
           raise ex
         end
-      end
-
-      private
-      # Called by SpiderMonkey's garbage collector to determine whether or
-      # not it should GC
-      def should_sm_gc?
-        return false if Thread.list.find_all { |t|
-          t.key?(CONTEXT_MAP_KEY)
-        }.length > 1
-        true
       end
     end
   end
