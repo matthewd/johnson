@@ -24,8 +24,7 @@ module Johnson #:nodoc:
 
 
       def current_context
-        contexts = (Thread.current[CONTEXT_MAP_KEY] ||= {})
-        contexts[self.object_id] ||= Context.new(self)
+        @context ||= Context.new(self)
       end
 
       def [](key)

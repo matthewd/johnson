@@ -14,9 +14,7 @@ begin
       def test_set_location_returns_location
         filename = "file://#{File.expand_path(__FILE__)}"
 
-        may_thread {
-          @runtime.evaluate("window.location = '#{filename}'")
-        }
+        @runtime.evaluate("window.location = '#{filename}'")
 
         uri = URI.parse(filename)
         assert_equal(uri.to_s, @runtime.evaluate('window.location').to_s)
@@ -25,16 +23,9 @@ begin
       def test_set_location_with_url
         file = File.expand_path(__FILE__) + "/../../assets/index.html"
         filename = "file://#{File.expand_path(file)}"
-        may_thread {
-          @runtime.evaluate("window.location = '#{filename}'")
-        }
+        @runtime.evaluate("window.location = '#{filename}'")
         doc = @runtime.evaluate('window.document')
         assert_not_nil(doc)
-      end
-
-      def may_thread(&block)
-        block.call
-        (Thread.list - [Thread.main]).each { |t| t.join }
       end
     end
   end
