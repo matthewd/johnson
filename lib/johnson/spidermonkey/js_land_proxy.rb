@@ -10,9 +10,10 @@ module Johnson
         def target.js_property?(name); true; end
       end
           
-      def self.js_property?(target, name)
+      def self.js_property?(target, name, method)
         # FIXME: that rescue is gross; handles, e.g., "name?"
-        (target.send(:instance_variable_defined?, "@#{name}") rescue false) ||
+        (Johnson::SpiderMonkey::Runtime.invoke_zero_arity? && method.arity == 0) ||
+          (target.send(:instance_variable_defined?, "@#{name}") rescue false) ||
           (target.respond_to?(:js_property?) && target.__send__(:js_property?, name))
       end
       

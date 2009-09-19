@@ -144,7 +144,7 @@ static bool attribute_p(VALUE self, char* name)
   }
 
   return RTEST(rb_funcall(Johnson_SpiderMonkey_JSLandProxy(),
-    rb_intern("js_property?"), 2, self, ID2SYM(rb_id)));
+    rb_intern("js_property?"), 3, self, ID2SYM(rb_id), rb_method));
 }
 
 static bool indexable_p(VALUE self)

@@ -19,6 +19,8 @@ module Johnson #:nodoc:
         @gcthings.delete(object_id) if defined? @gcthings
       end
 
+      def self.invoke_zero_arity= v; @invoke_zero_arity = v; end
+      def self.invoke_zero_arity?; @invoke_zero_arity ||= false; end
 
       def current_context
         @context ||= Context.new(self)
