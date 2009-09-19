@@ -22,7 +22,7 @@ static JSBool resolve(JSContext *js_context, JSObject *obj, jsval id, uintN flag
 }
 
 static JSClass OurGlobalClass = {
-  "global", JSCLASS_NEW_RESOLVE | JSCLASS_GLOBAL_FLAGS,
+  "JSLandGlobal", JSCLASS_NEW_RESOLVE | JSCLASS_GLOBAL_FLAGS,
   JS_PropertyStub, // addProperty
   JS_PropertyStub, // delProperty
   JS_PropertyStub, // getProperty

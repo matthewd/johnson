@@ -61,5 +61,24 @@ module Johnson
         @runtime.evaluate_compiled_script("3+9")
       }
     end
+
+    def test_flush_clears_properties
+      @runtime.global['x'] = 'Z'
+      assert_js_equal('qZ', '"q" + x')
+      @runtime.flush
+      @runtime.global['x'] = 'A'
+      assert_js_equal('pA', '"p" + x')
+      @runtime.flush
+      assert_raises(Johnson::Error) {
+        @runtime.evaluate('"3" + x')
+      }
+    end
+
+    def test_flush_replaces_global
+      original_global = @runtime.global
+      assert_equal(@runtime.global, original_global)
+      @runtime.flush
+      assert_not_equal(@runtime.global, original_global)
+    end
   end
 end

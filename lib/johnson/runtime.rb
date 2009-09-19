@@ -10,6 +10,11 @@ module Johnson
 
     def initialize(delegate=Johnson::SpiderMonkey::Runtime)
       @delegate = delegate.is_a?(Class) ? delegate.new : delegate
+      populate_global
+    end
+
+    def populate_global
+      global.Ruby = Object
       evaluate PRELUDE, PRELUDE_PATH, 1
       global.Johnson.runtime = self
     end
@@ -25,6 +30,11 @@ module Johnson
     def evaluate(expression, filename=nil, linenum=nil)
       return nil if expression.nil?
       delegate.evaluate(expression, filename, linenum)
+    end
+
+    def flush
+      @delegate = @delegate.class.new
+      populate_global
     end
 
     def global
