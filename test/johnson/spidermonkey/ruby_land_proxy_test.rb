@@ -204,9 +204,10 @@ module Johnson
       end
 
       def test_raises_in_js
-        @runtime["foo"] = lambda { raise RuntimeError.new("an exception") }
+        originally_raised = RuntimeError.new("an exception")
+        @runtime["foo"] = lambda { raise originally_raised }
         raised = @runtime.evaluate "x = null; try { foo(); } catch(ex) { x = ex; }; x"
-        assert_equal "#<RuntimeError: an exception>", raised.message
+        assert_equal originally_raised, raised
       end
 
       def test_uncaught_exceptions_have_decent_stack_trace
@@ -215,9 +216,9 @@ module Johnson
         begin
           @runtime.evaluate "foo()"
         rescue Exception => e
-          assert_equal "#<RuntimeError: an exception> at (none):1", e.message
-          assert_match %r/none:1\b/, e.backtrace[0]
-          assert_match %r/#{__FILE__}:#{line_number}\b/, e.backtrace[1]
+          assert_equal "an exception", e.message
+          assert_match %r/none:1\b/, e.instance_variable_get(:@spidermonkey_boundary_stacks)[0][1]
+          assert_match %r/#{__FILE__}:#{line_number}\b/, e.backtrace[0]
         else
           flunk "exception was not raised"
         end
@@ -232,23 +233,12 @@ module Johnson
         assert_equal(3, z)
       end
 
-      # FIXME: If you uncomment this test, we get this error:
-      #
-      # JS API usage error: the address passed to JS_AddNamedRoot currently holds an
-      # invalid jsval.  This is usually caused by a missing call to JS_RemoveRoot.
-      # The root's name is "ruby_land_proxy.c[210]:native_call: proxy_value".
-      # Assertion failure: root_points_to_gcArenaList, at jsgc.c:2618
-      # 
-      # WTF?
-      #
-      # -Aaron
-      #
-      #def test_throwing_in_js_goes_to_ruby
-      #  func = @runtime.evaluate('function () { throw "foo"; }')
-      #  assert_raise(Johnson::Error) {
-      #    func.call
-      #  }
-      #end
+      def test_throwing_in_js_goes_to_ruby
+        func = @runtime.evaluate('function () { throw "foo"; }')
+        assert_raise(Johnson::Error) {
+          func.call
+        }
+      end
     end
   end
 end

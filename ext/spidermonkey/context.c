@@ -65,9 +65,7 @@ initialize_native(VALUE self, VALUE rb_runtime, VALUE UNUSED(options))
     JS_SetContextPrivate(context->js, (void *)self);
 
     JS_SetOptions(context->js, JS_GetOptions(context->js)
-#ifdef JSOPTION_DONT_REPORT_UNCAUGHT
         | JSOPTION_DONT_REPORT_UNCAUGHT
-#endif
 #ifdef JSOPTION_VAROBJFIX
         | JSOPTION_VAROBJFIX
 #endif

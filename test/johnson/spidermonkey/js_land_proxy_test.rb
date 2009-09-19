@@ -264,13 +264,9 @@ module Johnson
           def js_property?(name) ; true ; end
         end
         @runtime['foo'] = klass.new
-        begin
+        assert_raises(ArgumentError) {
           @runtime.evaluate("foo.bar")
-        rescue Exception => e
-          assert_match(/ArgumentError/, e.message)
-        else
-          flunk "did not raise an exception"
-        end
+        }
       end
     end
   end

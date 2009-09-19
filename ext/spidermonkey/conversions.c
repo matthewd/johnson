@@ -299,10 +299,15 @@ JSBool report_ruby_error_in_js(JohnsonRuntime* runtime, int state, VALUE old_err
         VALUE local_error = ruby_errinfo;
         ruby_errinfo = old_errinfo;
 
-        local_error = rb_funcall(local_error, rb_intern("inspect"), 0);
-        JS_ReportError(context, StringValuePtr(local_error));
+        VALUE rb_runtime = (VALUE)JS_GetRuntimePrivate(runtime->js);
+        rb_funcall(rb_runtime, rb_intern("add_boundary_stacks"), 1, local_error);
 
-        return JS_FALSE ;
+        jsval js_error;
+        convert_to_js(runtime, local_error, &js_error);
+
+        JS_SetPendingException(context, js_error);
+
+        return JS_FALSE;
       }
 
     case TAG_THROW:

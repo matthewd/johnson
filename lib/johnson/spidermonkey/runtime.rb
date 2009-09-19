@@ -56,24 +56,41 @@ module Johnson #:nodoc:
         native_compile(script, filename, linenum)
       end
 
-      class << self
-        def raise_js_exception(jsex)
-          raise jsex if Exception === jsex
-          raise Johnson::Error.new(jsex.to_s) unless Johnson::SpiderMonkey::RubyLandProxy === jsex
+      def current_stack
+        evaluate('(function () { try { null.null(); } catch (ex) { return ex.stack; } })()')
+      end
 
-          stack = jsex.stack rescue nil
+      # WARNING: This function is currently invoked unprotected from C;
+      # if it raises or throws, Ruby WILL segfault. And that's Bad.
+      def add_boundary_stacks(ex, ruby_skip=0)
+        if ex.instance_variable_defined?(:@spidermonkey_boundary_stacks)
+          list = ex.instance_variable_get(:@spidermonkey_boundary_stacks)
+        else
+          list = ex.instance_variable_set(:@spidermonkey_boundary_stacks, [])
+        end
 
+        list << [:js, self.current_stack]
+        list << [:ruby, caller(ruby_skip + 1)]
+
+      rescue Object
+      end
+
+      def raise_above(ex, up)
+        ex.set_backtrace caller(up + 1)
+        raise ex
+      end
+
+      def raise_js_exception(jsex)
+        case jsex
+        when Exception
+          raise jsex
+        when String
+          raise_above Johnson::Error.new(jsex), 2
+        when Johnson::SpiderMonkey::RubyLandProxy
           message = jsex['message'] || jsex.to_s
-          at = "(#{jsex['fileName']}):#{jsex['lineNumber']}"
-          ex = Johnson::Error.new("#{message} at #{at}")
-          if stack
-            js_caller = stack.split("\n").find_all { |x| x != '@:0' }
-            ex.set_backtrace(js_caller + caller)
-          else
-            ex.set_backtrace(caller)
-          end
-
-          raise ex
+          raise_above Johnson::Error.new(message, jsex), 2
+        else
+          raise_above Johnson::Error.new(jsex.inspect), 2
         end
       end
     end
