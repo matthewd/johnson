@@ -1,6 +1,8 @@
 #ifndef JOHNSON_SPIDERMONKEY_JS_LAND_PROXY_H
 #define JOHNSON_SPIDERMONKEY_JS_LAND_PROXY_H
 
+#define INVOKE_ON_OBJECT_RETURNS_SELF
+
 #include "spidermonkey.h"
 #include "runtime.h"
 

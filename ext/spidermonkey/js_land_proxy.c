@@ -6,6 +6,9 @@ static JSBool set(JSContext* context, JSObject* obj, jsval id, jsval* retval);
 static JSBool construct(JSContext* js_context, JSObject* obj, uintN argc, jsval* argv, jsval* retval);
 static JSBool resolve(JSContext *js_context, JSObject *obj, jsval id, uintN flags, JSObject **objp);
 static JSBool call(JSContext* js_context, JSObject* obj, uintN argc, jsval* argv, jsval* retval);
+#ifdef INVOKE_ON_OBJECT_RETURNS_SELF
+static JSBool call_return_self(JSContext* js_context, JSObject* obj, uintN argc, jsval* argv, jsval* retval);
+#endif
 static void finalize(JSContext* context, JSObject* obj);
 
 static JSClass JSLandProxyClass = {
@@ -17,7 +20,14 @@ static JSClass JSLandProxyClass = {
   JS_EnumerateStub,
   (JSResolveOp) resolve,
   JS_ConvertStub,
-  finalize
+  finalize,
+  NULL,
+  NULL,
+#ifdef INVOKE_ON_OBJECT_RETURNS_SELF
+  call_return_self
+#else
+  NULL
+#endif
 };
 
 static JSClass JSLandClassProxyClass = {
@@ -483,6 +493,14 @@ static JSBool method_missing(JSContext* js_context, JSObject* obj, uintN argc, j
 
   JRETURN;
 }
+
+#ifdef INVOKE_ON_OBJECT_RETURNS_SELF
+static JSBool call_return_self(JSContext* js_context, JSObject* UNUSED(obj), uintN argc, jsval* argv, jsval* retval)
+{
+  *retval = JS_ARGV_CALLEE(argv);
+  return JS_TRUE;
+}
+#endif
 
 static JSBool call(JSContext* js_context, JSObject* UNUSED(obj), uintN argc, jsval* argv, jsval* retval)
 {
